@@ -38,6 +38,6 @@ or
 And even execute and type successively expressions ended by `enter`  and then press `ctrl-d` to stop reading and show the results.
 
 # Authorship
-This program was made by [Felipe Ramos](https://github.com/FelipeCRamos) and [Felipe Andrade](https://github.com/felspsisonfire) with MIT License for Programing Language discipline from Computer Science Course on [Federal University of Rio Grande do Norte](https://ufrn.br).
+This program was made by [Felipe Ramos](https://github.com/FelipeCRamos) and [Felipe Andrade](https://github.com/felspsisonfire) with MIT License, for Programming Language I discipline, from Computer Science Course on [Federal University of Rio Grande do Norte](https://ufrn.br).
 
 
