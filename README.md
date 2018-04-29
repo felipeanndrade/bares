@@ -10,6 +10,12 @@ The program needs to be able to recieve simple arithmetic expressions made of:
 + Operators ('+', '-', '/', '*', '^', '%'), with their correspondant precedence
 + Parentheses
 
+Precedence | Operators | Association | Description
+---------- | --------- | ----------- | -----------
+1 | ^ | <- | Power
+2 | * / % | -> | Multiplication, division, mod
+3 | + - | -> | Sum, subtraction
+
 # Dependencies
 <!-- TODO -->
 # Compile
@@ -18,4 +24,5 @@ The program needs to be able to recieve simple arithmetic expressions made of:
 <!-- TODO -->
 # Authorship
 <!-- authors -->
+
 
