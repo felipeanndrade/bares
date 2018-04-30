@@ -1,4 +1,5 @@
 #include <iostream>
+#include "parser.hpp"
 
 int main( int argc, char **argv ){
 	
@@ -7,6 +8,7 @@ int main( int argc, char **argv ){
 	 * Handle exceptions
 	 * Drive all methods :D
 	 */
+
 
 	return EXIT_SUCCESS;
 }
