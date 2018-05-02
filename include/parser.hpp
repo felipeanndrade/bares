@@ -1,7 +1,10 @@
 #ifndef PARSER_H_
 #define PARSER_H_
+#include <iostream>
 #include <vector>
 #include <cmath>
+#include <initializer_list>
+#include <string>
 
 /*TODO: 
  * Tabela de erros
@@ -17,7 +20,7 @@ class Expression{
 	public:
 		// Constructors / Destructors
 		Expression( std::initializer_list<size_type> );
-		~Expression();
+		// ~Expression();
 
 		// Inserting
 		void insert( const size_type );		// Will insert an element on pile
@@ -29,6 +32,7 @@ class Expression{
 
 		// debug related 
 		void print();		// print current expression members
+		void print( std::string ); 
 		void clear();		// clear all expression members
 		void size();		// get current size (number of members) of expression
 };

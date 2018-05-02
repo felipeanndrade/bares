@@ -1,25 +1,57 @@
-RM = rm -rf
+# Makefile for the LP I Project "Bares"
 
+# Creators:
+# - Felipe Andrade
+# - Felipe Ramos
+
+# Makefile conventions
+SHELL = /bin/sh
+
+# Dir
+incdir = ./include
+srcdir = ./src
+objdir = ./obj
+bindir = ./bin
+datadir = ./data
+
+# Macros
 CC = g++
+CFLAGS = -Wall -g -ggdb -std=c++11 -I. -I$(incdir)
+RM = -rm
+TARGET = bares
 
-LIB_DIR = ./lib
-INC_DIR = ./include
-SRC_DIR = ./src
-OBJ_DIR = ./build
-BIN_DIR = ./bin
-DOC_DIR = ./doc
+HEADERS := $(wildcard $(incdir)/*)
+SOURCES := $(wildcard $(srcdir)/*.cpp)
+OBJECTS := $(SOURCES:$(srcdir)/%.cpp=$(objdir)/%.o)
 
-CFLAGS = -Wall -std=c++11 -I -I$(INC_DIR)
+all: project
 
-.PHONY: all clean distclean doxy
-
-all: $(BIN_DIR)/main
-
-base:
-	@mkdir -p $(INC_DIR)/
-	@mkdir -p $(SRC_DIR)/
-init:
-	@mkdir -p $(BIN_DIR)/
-	@mkdir -p $(OBJ_DIR)/
+project: $(OBJECTS) $(HEADERS) | $(bindir)
+	@echo "Linking " $(OBJECTS)
+	$(CC) $(OBJECTS) $(CFLAGS) -o $(bindir)/$(TARGET)
+	@echo "Creating symlink..."
+	@ln -sfv $(bindir)/$(TARGET) $(TARGET)	
 
 
+$(OBJECTS): $(objdir)/%.o : $(srcdir)/%.cpp $(HEADERS) | $(objdir)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(objdir): 
+	@mkdir -p $(objdir)
+
+$(bindir):
+	@mkdir -p $(bindir)
+
+# Clean phony
+.PHONY: clean clean_txt clean_docs clean_proj
+
+clean: clean_proj # clean_txt clean_docs
+
+clean_proj:
+	@echo "Removing obj files..."
+	@$(RM) -f $(objdir)/*		# Remove obj files
+	@echo "Removing bin files..."
+	@$(RM) -f $(bindir)/*		# Remove bin files
+	@echo "Removing symlink file..."
+	@$(RM) -f $(TARGET)			# Remove symlink
+	@echo "Cleanup is done!"
