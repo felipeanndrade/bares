@@ -3,12 +3,15 @@
 #define debug false
 
 int main( int argc, char **argv ){
-	
-	/* TODO:
-	 * Read from input files and user input
-	 * Handle exceptions
-	 * Drive all methods :D
-	 */
+	// input string
+	std::string input;
 
+	while (std::getline(std::cin, input)){
+		auto parsed = parse(input);
+		std::cout << parsed << std::endl;
+		// TODO: Treat expressions
+	}
+
+	std::cout << "Normal exit." << std::endl;
 	return EXIT_SUCCESS;
 }
