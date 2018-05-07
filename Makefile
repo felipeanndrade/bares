@@ -49,9 +49,9 @@ clean: clean_proj # clean_txt clean_docs
 
 clean_proj:
 	@echo "Removing obj files..."
-	@$(RM) -f $(objdir)/*		# Remove obj files
+	@$(RM) -rf $(objdir)		# Remove obj files
 	@echo "Removing bin files..."
-	@$(RM) -f $(bindir)/*		# Remove bin files
+	@$(RM) -rf $(bindir)		# Remove bin files
 	@echo "Removing symlink file..."
 	@$(RM) -f $(TARGET)			# Remove symlink
 	@echo "Cleanup is done!"
