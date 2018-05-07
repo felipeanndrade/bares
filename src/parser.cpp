@@ -11,6 +11,7 @@
  * 	\return A filtered std::string object
  */
 std::string parse( std::string expression ){
+	/*{{{*/
 	std::string result;
 	for( auto i = expression.begin(); i != expression.end(); i++ ){
 		switch(*i){
@@ -24,6 +25,7 @@ std::string parse( std::string expression ){
 	}
 	return result;
 }
+/*}}}*/
 
 /*!
  * 	\brief 	Converts a infix expression to postfix expression
@@ -31,42 +33,57 @@ std::string parse( std::string expression ){
  * 	\return	std::string 
  */
 std::string infix_to_postfix( std::string inf_exp ){
-	// We expect that the string is already parsed
-
+	/*{{{*/
+	// We expect that the string is already parsed (without the spaces)
+	
 	// Stack pile that will be used to hold operators
-	std::list<char> opr_stack;
 	std::string pos_exp;
-
-	for( auto c = inf_exp.begin(); c != inf_exp.end(); c++ ){
-		std::cout << "Processing char: " << *c << "\n";
+	
+	for( auto c = inf_exp.begin(); c < inf_exp.end(); c++ ){
 		if( *c >= 0x30 and *c <= 0x39 ){
-			std::cout << "\tIt's a number between [0-9]!\n";
 
-			int holder = 0;				// resets the holder
-			size_t flag = 1; 			// decimal position of the number
-			while( flag != 0 and c != inf_exp.end() - 1){
-				std::cout << "\t\twhile: " << *c << std::endl;
-				if( *c >= 0x30 and *c <= 0x39 ){
-					std::cout << "\t\t\tIt's another number!\n";
-					std::cout << "\t\t\tCurrent holder = " << holder << "\n";
-					int num = *c;
-					std::cout << "\t\t\tNum = " << num << std::endl;
-					holder += flag * int(*c);
-					std::cout << "\t\t\t\t*c = " << (int)*c << std::endl;
-					std::cout << "\t\t\tAfter holder = " << holder << "\n";
-					flag++;
-					c++;
-				} else {
-					std::cout << "\t\t\tIt's not another number!\n";
-					flag = 0;
+			int holder = 0;					// resets the holder
+			size_t flag = true; 			// decimal position of the number
+
+			while( flag == true and c < inf_exp.end() ){
+
+				int number_size = 1;
+				// Discover how many digits are
+				while(*(c+number_size) >= 0x30 and *(c+number_size) <= 0x39){
+					if( c + number_size++ >= inf_exp.end() ) break;
 				}
+				
+				// Holder for future calcs
+				int gen_number = 0;
+				
+				// Adds the 10^i * number
+				for( int i = 0; i < number_size - 1; i++ ){
+					int buffer = ctoi( *(c+i) );		
+					gen_number += pow(10, (number_size - i - 1)) * buffer;
+				}
+
+				// Adds the number to the total number
+				gen_number += ctoi(*(c + number_size - 1));
+
+				holder = gen_number;
+				
+				// setting variables
+				flag = false;
+				c += number_size - 1;
 			}
-			std::cout << "\t\tPossible number: " << holder << std::endl;
+
+			// debug only
+			std::cout << "N : " << holder << std::endl;
 		} else {
-			std::cout << "\tIgnored\n";
+			// If lands here, it's a operator sign
+			int op = what_is(*c);
+			std::cout << "operation " << op << std::endl;
+			// TODO: Discover operations
 		}
 	}
+	return "stub";
 }
+/*}}}*/
 
 /*!
  * 	\brief 	Simplify categories telling what certain char is
@@ -74,7 +91,7 @@ std::string infix_to_postfix( std::string inf_exp ){
  * 	\return size_t : Char type
  */
 size_t what_is( char el ){
-	/*
+	/* {{{
 	 * HELP TABLE
 	 * 0 : simple number
 	 * 1 : add or subt operation
@@ -103,4 +120,42 @@ size_t what_is( char el ){
 	// if didn't returned anything till now, it's a number
 	return 0;
 }
+/*}}}*/
 
+int ctoi( char c ){
+/*{{{*/
+	switch(c){
+		case '0':
+			return 0;
+			break;
+		case '1':
+			return 1;
+			break;
+		case '2':
+			return 2;
+			break;
+		case '3':
+			return 3;
+			break;
+		case '4':
+			return 4;
+			break;
+		case '5':
+			return 5;
+			break;
+		case '6':
+			return 6;
+			break;
+		case '7':
+			return 7;
+			break;
+		case '8':
+			return 8;
+			break;
+		case '9':
+			return 9;
+			break;
+	}
+	return 0;
+}
+/*}}}*/

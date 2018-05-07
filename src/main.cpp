@@ -16,6 +16,7 @@ int main( int argc, char **argv ){
 		if(debug) std::cout << "Infix generated exp: " << infix_expression;
 		std::cout << std::endl;
 		infix_to_postfix(infix_expression);
+		std::cout << "Finalized" << std::endl;
 
 		// and then, asks the user all again until EOF
 		if(debug) std::cout << wel_msg;
