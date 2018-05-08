@@ -1,5 +1,6 @@
 #include <iostream>
 #include "parser.hpp"
+#include "token.hpp"
 #define debug true
 
 std::string wel_msg = "Please, enter the infix expression: ";
@@ -15,7 +16,7 @@ int main( int argc, char **argv ){
 		auto infix_expression = parse(input);	
 		if(debug) std::cout << "Infix generated exp: " << infix_expression;
 		std::cout << std::endl;
-		infix_to_postfix(infix_expression);
+		tokenize_infix(infix_expression);
 		std::cout << "Finalized" << std::endl;
 
 		// and then, asks the user all again until EOF

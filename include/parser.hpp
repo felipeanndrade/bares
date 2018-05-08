@@ -14,7 +14,4 @@ std::string parse( std::string );
 size_t what_is( char el );
 int ctoi( char );
 
-// Converts a infix expression to postfix expression to later work
-std::string infix_to_postfix( std::string );
-
 #endif
