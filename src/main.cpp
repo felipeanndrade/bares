@@ -22,7 +22,6 @@ int main( int argc, char **argv ){
 
 		main_exp.tokenize();
 		main_exp.print_t();
-
 	}
 
 	std::cout << "\n> Normal exit" << std::endl;

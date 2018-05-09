@@ -88,7 +88,7 @@ int Exp::make_num( std::string::iterator &pos ){
 	}
 	pos--;
 	std::cout << "Number: " << num << std::endl;
-	return 1;
+	return std::stoi( num );
 }
 /*}}}*/
 
@@ -160,7 +160,9 @@ bool Exp::checkParent( void ){
 				}
 			}
 
-			std::cout << " at column (" << col << ")!" << std::endl;
+			std::cout << " at column (";
+			// TODO INNER-OUT PARENTHESES -> 5 + (3 + 2 + 2 + [2 + 3)]
+			std::cout << ")!" << std::endl;
 			return 0;
 		}
 	}
@@ -172,24 +174,34 @@ bool Exp::checkParent( void ){
 /* Token methods {{{*/
 void Exp::tokenize( void ){
 /* Function implementation {{{*/
-	for( auto &c_ : orig_exp ){
-		Token buf;
-		if( isDelimiter( c_ ) ){
-			// is a delimiter
-			buf.m_value = c_;
-			buf.m_priority = "4";
+	bool minus_flag = false;
+	for( auto c_ = orig_exp.begin(); c_ < orig_exp.end(); c_++ ){
+		if( *c_ != TS_WS and *c_ != TS_TAB ){
+			Token buf;
+			if( isDelimiter( *c_ ) ){
+				// is a delimiter
+				buf.m_value = *c_;
+				buf.m_priority = 4;
+			}
+			if( isOperation( *c_ ) ){
+				// its a operator
+				if( *c_ == TS_MINUS and isDigit( *(c_+1) ) ){
+					// set minus_flag to true, so we could invert int signal
+					minus_flag = true;	
+				}
+				buf.m_value = *c_;
+				buf.m_priority = prior( *c_ );
+			} 
+			if( isDigit( *c_ ) ){
+				// its a number
+				int number = make_num( c_ );
+				// if( minus_flag ) number *= -1;
+				buf.m_value = std::to_string(number);
+				std::cout << "Number formed: " << number << std::endl;
+				buf.m_priority = 0;
+			}
+			work_exp.push_back(buf);
 		}
-		if( isOperation( c_ ) ){
-			// its a operator
-			buf.m_value = c_;
-			buf.m_priority = (char) prior( c_ );
-		} 
-		if( isDigit( c_ ) ){
-			// its a number
-			buf.m_value = c_;
-			buf.m_priority = "0";
-		}
-		work_exp.push_back(buf);
 	}
 }
 /*}}}*/
@@ -212,7 +224,7 @@ void Exp::print_t( void ){
 /* Function implementation {{{*/
 	std::cout << "============= Entered in print_t\n";
 	for( auto &i : work_exp ){
-		std::cout << i.m_value << "~";
+		std::cout << "< " << i.m_value << ", " << i.m_priority << " > ";
 	}
 	std::cout << std::endl;
 }

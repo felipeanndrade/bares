@@ -31,7 +31,7 @@ private:
 	/* Token class {{{*/
 	public:
 		std::string m_value;
-		std::string m_priority;
+		int m_priority;
 	};
 	/*}}}*/
 
