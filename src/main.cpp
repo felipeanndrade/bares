@@ -1,28 +1,30 @@
 #include <iostream>
-#include "parser.hpp"
-#include "token.hpp"
-#define debug true
+#include "exp.hpp"
+#include "error.hpp"
 
-std::string wel_msg = "Please, enter the infix expression: ";
+#define debug true
 
 int main( int argc, char **argv ){
 	std::cout << "> Program started\n";
-	// input string
+
 	std::string input;
 
-	if(debug) std::cout << wel_msg;
-	while (std::getline(std::cin, input)){
-		// The parse() generates an infix expression without spaces and tabs
-		auto infix_expression = parse(input);	
-		if(debug) std::cout << "Infix generated exp: " << infix_expression;
-		std::cout << std::endl;
-		tokenize_infix(infix_expression);
-		std::cout << "Finalized" << std::endl;
+	while( std::getline(std::cin, input) ){
 
-		// and then, asks the user all again until EOF
-		if(debug) std::cout << wel_msg;
+		Exp main_exp(input);	///> Generates the expression object
+		std::cout << "E: ";
+		main_exp.print();
+		std::cout << std::endl;
+		if( !main_exp.parse() ){
+			std::cout << "> Error exit" << std::endl;
+			return 0;
+		}
+
+		main_exp.tokenize();
+		main_exp.print_t();
+
 	}
 
-	std::cout << "EOF exit." << std::endl;
+	std::cout << "\n> Normal exit" << std::endl;
 	return EXIT_SUCCESS;
 }
