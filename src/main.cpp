@@ -17,7 +17,7 @@ int main( int argc, char **argv ){
 		std::cout << std::endl;
 		if( !main_exp.parse() ){
 			std::cout << "> Error exit" << std::endl;
-			return 0;
+			return 1;
 		}
 
 		main_exp.tokenize();

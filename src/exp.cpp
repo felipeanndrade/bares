@@ -1,5 +1,7 @@
 #include "exp.hpp"
 
+#define debug false
+
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
 /* Function implementation {{{*/
@@ -55,7 +57,7 @@ bool Exp::parse( void ){
 	}
 
 	if( !checkParent() ){
-		std::cout << "checkParent() returned 0;\n";
+		if(debug) std::cout << "checkParent() returned 0;\n";
 		return 0;
 	}
 
@@ -64,9 +66,9 @@ bool Exp::parse( void ){
 			make_num(i);
 		} else if ( *i != TS_WS and *i != TS_TAB ){
 			if( isOperation( *i ) ){
-				std::cout << "Operator: " << *i << std::endl;
+				if(debug) std::cout << "Operator: " << *i << std::endl;
 			} else if( isDelimiter( *i ) ){
-				std::cout << "Delimiter: " << *i << std::endl;
+				if(debug) std::cout << "Delimiter: " << *i << std::endl;
 			} else {
 				std::cout << "Ill formed integer at column (";
 				std::cout << i - orig_exp.begin() + 1;
@@ -87,7 +89,7 @@ int Exp::make_num( std::string::iterator &pos ){
 		pos++;
 	}
 	pos--;
-	std::cout << "Number: " << num << std::endl;
+	if(debug) std::cout << "Number: " << num << std::endl;
 	return std::stoi( num );
 }
 /*}}}*/
@@ -174,7 +176,6 @@ bool Exp::checkParent( void ){
 /* Token methods {{{*/
 void Exp::tokenize( void ){
 /* Function implementation {{{*/
-	bool minus_flag = false;
 	for( auto c_ = orig_exp.begin(); c_ < orig_exp.end(); c_++ ){
 		if( *c_ != TS_WS and *c_ != TS_TAB ){
 			Token buf;
@@ -185,19 +186,14 @@ void Exp::tokenize( void ){
 			}
 			if( isOperation( *c_ ) ){
 				// its a operator
-				if( *c_ == TS_MINUS and isDigit( *(c_+1) ) ){
-					// set minus_flag to true, so we could invert int signal
-					minus_flag = true;	
-				}
 				buf.m_value = *c_;
 				buf.m_priority = prior( *c_ );
 			} 
 			if( isDigit( *c_ ) ){
 				// its a number
 				int number = make_num( c_ );
-				// if( minus_flag ) number *= -1;
 				buf.m_value = std::to_string(number);
-				std::cout << "Number formed: " << number << std::endl;
+				if(debug) std::cout << "Number formed: " << number << std::endl;
 				buf.m_priority = 0;
 			}
 			work_exp.push_back(buf);
@@ -222,7 +218,7 @@ int Exp::prior( char char_ ){
 
 void Exp::print_t( void ){
 /* Function implementation {{{*/
-	std::cout << "============= Entered in print_t\n";
+	std::cout << "Entered in print_t\n";
 	for( auto &i : work_exp ){
 		std::cout << "< " << i.m_value << ", " << i.m_priority << " > ";
 	}
