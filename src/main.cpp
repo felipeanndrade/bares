@@ -22,6 +22,11 @@ int main( int argc, char **argv ){
 
 		main_exp.tokenize();
 		main_exp.print_t();
+
+		std::cout << "=========== toPostfix() ==================\n";
+		
+		main_exp.toPostfix();
+
 	}
 
 	std::cout << "\n> Normal exit" << std::endl;

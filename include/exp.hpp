@@ -3,7 +3,9 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <list>
 #include "error.hpp"
+
 
 // Symbols needed
 enum symbols_t{
@@ -37,6 +39,8 @@ private:
 
 	std::string orig_exp;
 	std::vector<Token> work_exp;
+	std::vector<Token>::iterator currentPos = work_exp.begin();
+
 
 /*}}}*/
 
@@ -75,8 +79,13 @@ public:
 
 /* Token Methods {{{*/
 	void tokenize( void );			// Tokenize the expression
+	void toPostfix( void );
+
 	int prior( char );
 	void print_t( void );
+
+	bool f_check( int );			// Checks if the exp has a > prior element
+	size_t peekNext( void );	 
 /*}}}*/
 };
 /*}}}*/

@@ -45,6 +45,7 @@ void Exp::print( void ){
 	}	
 }
 /*}}}*/
+
 /*}}}*/
 
 /* Parse methods {{{*/
@@ -105,7 +106,7 @@ bool Exp::isDigit( char c_ ){
 
 bool Exp::isOperation( char c_ ){
 /* Function implementation {{{*/
-	std::string list_operators = "+-*/%";
+	std::string list_operators = "+-*/%^";
 	for( auto &i : list_operators ){
 		if( c_ == i ) return true;
 	}
@@ -202,6 +203,63 @@ void Exp::tokenize( void ){
 }
 /*}}}*/
 
+void Exp::toPostfix( void ){
+	/* Function implementation {{{*/
+	std::list<Token> l_stack;
+	std::vector<Token> postfix_e;
+	this->currentPos = work_exp.begin();
+	for( auto &i : this->work_exp ){
+		//
+		// DEBUG PRINTS
+		std::cout << "--------------------------------------------\n";
+		std::cout << "Stack print: ";
+		for( auto &s : l_stack ){
+			std::cout << s.m_value << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "Current postfix print: ";
+		for( auto &p : postfix_e ){
+			std::cout << p.m_value << " ";
+		}
+		std::cout << std::endl;
+
+		//
+		// get token by token
+		switch( i.m_priority ){
+			case 0:		// integer
+				postfix_e.push_back(i);	
+				break;
+			case 1:		// +, - signs
+				if( !f_check( 1 ) ){
+					postfix_e.push_back(i);
+				} else {
+					l_stack.push_back(i);
+				}
+				break;
+			case 2:		// *, /, % signs
+				if( !f_check( 2 ) ){
+					postfix_e.push_back(i);
+				} else {
+					l_stack.push_back(i);
+				}
+				break;
+			case 3:		// delimiter char
+				if( !f_check( 3 ) ){
+					postfix_e.push_back(i);
+				} else {
+					l_stack.push_back(i);
+				}
+				break;
+			// case 4:
+				// delimiters, special behavior that i need to think
+		this->currentPos++;
+		}
+	}	
+	currentPos = work_exp.begin();
+}
+	/*}}}*/
+
 int Exp::prior( char char_ ){
 /* Function implementation {{{*/
 	switch( char_ ){
@@ -226,6 +284,25 @@ void Exp::print_t( void ){
 }
 /*}}}*/
 
+bool Exp::f_check( int m_prior ){
+/* Function implementation {{{*/
+	// Checks if it has a higher priority element (ahead)
+	auto curBak( currentPos );
+	for( ; currentPos < work_exp.end(); currentPos++ ){
+		if ( (*currentPos).m_priority > m_prior ){
+			currentPos = curBak;
+			return true;
+		}
+	}
+	currentPos = curBak;
+	return false;
+}
+/*}}}*/
+
+size_t Exp::peekNext( void ){
+	std::vector<Token>::iterator curBak = this->currentPos;		
+	return curBak++->m_priority;	
+}
 /*}}}*/
 
 
