@@ -1,9 +1,11 @@
 #ifndef EXP_H_
 #define EXP_H_
-#include <iostream>
+#include <iostream> 
 #include <sstream>
 #include <vector>
 #include <list>
+#include <stack>
+#include <cmath>
 #include "error.hpp"
 
 
@@ -39,6 +41,7 @@ private:
 
 	std::string orig_exp;
 	std::vector<Token> work_exp;
+	std::vector<Token> postfix_e;
 	std::vector<Token>::iterator currentPos = work_exp.begin();
 
 
@@ -77,16 +80,26 @@ public:
 
 /*}}}*/
 
-/* Token Methods {{{*/
+/* Token methods {{{*/
 	void tokenize( void );			// Tokenize the expression
-	void toPostfix( void );
+	void toPostfix( void );			// Transforms the expression to postfix
+	int prior( char );				// Tells the priority of a given char
 
-	int prior( char );
+	// Token discovers
+	bool hasBigger( Token, Token );	// Tells if has a bigger priority than
+	bool isOpenDel( Token );		// Tells if a token is a opening delimiter
+	bool isClosDel( Token );		// Tells if a token is a closing delimiter
+
+	// cool print function
 	void print_t( void );
-
-	bool f_check( int );			// Checks if the exp has a > prior element
-	size_t peekNext( void );	 
 /*}}}*/
+
+	/* Solving methods {{{*/
+	int solve( void );	
+	Token resultOf( Token, Token, Token );
+	Token resultOf2( Token, Token );
+	void invert_it( Token & );
+	/*}}}*/
 };
 /*}}}*/
 

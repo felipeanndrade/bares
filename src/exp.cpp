@@ -1,6 +1,6 @@
 #include "exp.hpp"
 
-#define debug false
+#define debug true
 
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
@@ -58,7 +58,7 @@ bool Exp::parse( void ){
 	}
 
 	if( !checkParent() ){
-		if(debug) std::cout << "checkParent() returned 0;\n";
+		// if(debug) std::cout << "checkParent() returned 0;\n";
 		return 0;
 	}
 
@@ -67,9 +67,9 @@ bool Exp::parse( void ){
 			make_num(i);
 		} else if ( *i != TS_WS and *i != TS_TAB ){
 			if( isOperation( *i ) ){
-				if(debug) std::cout << "Operator: " << *i << std::endl;
+				// if(debug) std::cout << "Operator: " << *i << std::endl;
 			} else if( isDelimiter( *i ) ){
-				if(debug) std::cout << "Delimiter: " << *i << std::endl;
+				// if(debug) std::cout << "Delimiter: " << *i << std::endl;
 			} else {
 				std::cout << "Ill formed integer at column (";
 				std::cout << i - orig_exp.begin() + 1;
@@ -90,7 +90,7 @@ int Exp::make_num( std::string::iterator &pos ){
 		pos++;
 	}
 	pos--;
-	if(debug) std::cout << "Number: " << num << std::endl;
+	// if(debug) std::cout << "Number: " << num << std::endl;
 	return std::stoi( num );
 }
 /*}}}*/
@@ -178,7 +178,10 @@ bool Exp::checkParent( void ){
 void Exp::tokenize( void ){
 /* Function implementation {{{*/
 	for( auto c_ = orig_exp.begin(); c_ < orig_exp.end(); c_++ ){
+		// for loop to get all the chars on the original expression
 		if( *c_ != TS_WS and *c_ != TS_TAB ){
+			// with this if statement, we will pass on all whitespaces and only
+			// process what matters
 			Token buf;
 			if( isDelimiter( *c_ ) ){
 				// is a delimiter
@@ -194,9 +197,9 @@ void Exp::tokenize( void ){
 				// its a number
 				int number = make_num( c_ );
 				buf.m_value = std::to_string(number);
-				if(debug) std::cout << "Number formed: " << number << std::endl;
 				buf.m_priority = 0;
 			}
+			// here we already should have a fully capable Token object
 			work_exp.push_back(buf);
 		}
 	}
@@ -204,61 +207,63 @@ void Exp::tokenize( void ){
 /*}}}*/
 
 void Exp::toPostfix( void ){
-	/* Function implementation {{{*/
-	std::list<Token> l_stack;
-	std::vector<Token> postfix_e;
-	this->currentPos = work_exp.begin();
+/* Function implementation {{{*/
+	std::stack<Token> r_stack;		// Stack to store the operations
+
 	for( auto &i : this->work_exp ){
-		//
-		// DEBUG PRINTS
-		std::cout << "--------------------------------------------\n";
-		std::cout << "Stack print: ";
-		for( auto &s : l_stack ){
-			std::cout << s.m_value << " ";
-		}
-		std::cout << std::endl;
+		if( i.m_priority == 0 ) {
+			// if the element priority is 0, then it's an integer
+			postfix_e.push_back(i);
+		} else if( i.m_priority > 0 ) {
+			// else, its a operator / delimiter
+			while( !r_stack.empty() and hasBigger( r_stack.top(), i ) 
+					and !isOpenDel( r_stack.top() ) )
+			{
+				// so, we check into the stack for bigger elements that's not 
+				// opening delimiters and clean them up pushing direcly to the
+				// final postfix expression
+				postfix_e.push_back( r_stack.top() );	// push the top elem
+				r_stack.pop();							// then, pop it
+			}
 
-		std::cout << "Current postfix print: ";
-		for( auto &p : postfix_e ){
-			std::cout << p.m_value << " ";
-		}
-		std::cout << std::endl;
+			// then, adds the current operator to the stack
+			r_stack.push(i);
 
-		//
-		// get token by token
-		switch( i.m_priority ){
-			case 0:		// integer
-				postfix_e.push_back(i);	
-				break;
-			case 1:		// +, - signs
-				if( !f_check( 1 ) ){
-					postfix_e.push_back(i);
-				} else {
-					l_stack.push_back(i);
-				}
-				break;
-			case 2:		// *, /, % signs
-				if( !f_check( 2 ) ){
-					postfix_e.push_back(i);
-				} else {
-					l_stack.push_back(i);
-				}
-				break;
-			case 3:		// delimiter char
-				if( !f_check( 3 ) ){
-					postfix_e.push_back(i);
-				} else {
-					l_stack.push_back(i);
-				}
-				break;
-			// case 4:
-				// delimiters, special behavior that i need to think
-		this->currentPos++;
+		} else if( isOpenDel(i) ) {
+			// if its a opening delimiter char...
+			r_stack.push(i);
+		} else if( isClosDel(i) ) {
+			// if its a closing delimiter char, we can solve all the pendent
+			// operations on stack until a opening delimiter char
+			while( !r_stack.empty() and !isOpenDel(r_stack.top()) ){
+				postfix_e.push_back(r_stack.top());
+				r_stack.pop();
+			}
+
+			r_stack.pop();	// pop one more time, to consume the opening char
 		}
 	}	
-	currentPos = work_exp.begin();
+
+	while(!r_stack.empty()) {
+		// now, we can put all the pendent operations on the postfix expression
+		if( !isOpenDel(r_stack.top()) and !isClosDel(r_stack.top()) ){
+			// we wont put the delimiters on the postfix expressions, since we
+			// dont need it
+			postfix_e.push_back( r_stack.top() );
+		}
+
+		r_stack.pop();
+	}
+
+	if( debug ){
+		std::cout << "Postfix expression:\n";
+		for( auto &c : postfix_e ){
+			std::cout << c.m_value << " ";
+		}
+		std::cout << std::endl;
+	}
 }
-	/*}}}*/
+/*}}}*/
 
 int Exp::prior( char char_ ){
 /* Function implementation {{{*/
@@ -274,9 +279,39 @@ int Exp::prior( char char_ ){
 }
 /*}}}*/
 
+bool Exp::hasBigger( Token top_t, Token act_t ){
+/* Function implementation {{{*/
+	if( act_t.m_priority > top_t.m_priority ){
+		return false;
+	} else {
+		return true;
+	}
+}
+/*}}}*/
+
+bool Exp::isOpenDel( Token top_t ){
+/* Function Implementation {{{*/
+	if( top_t.m_value == "(" or top_t.m_value == "[" or top_t.m_value == "{" ){
+		return true;
+	} else {
+		return false;
+	}
+}
+/*}}}*/
+
+bool Exp::isClosDel( Token top_t ){
+/* Function Implementation {{{*/
+	if( top_t.m_value == ")" or top_t.m_value == "]" or top_t.m_value == "}" ){
+		return true;
+	} else {
+		return false;
+	}
+}
+/*}}}*/
+
 void Exp::print_t( void ){
 /* Function implementation {{{*/
-	std::cout << "Entered in print_t\n";
+	// std::cout << "Entered in print_t\n";
 	for( auto &i : work_exp ){
 		std::cout << "< " << i.m_value << ", " << i.m_priority << " > ";
 	}
@@ -284,26 +319,95 @@ void Exp::print_t( void ){
 }
 /*}}}*/
 
-bool Exp::f_check( int m_prior ){
-/* Function implementation {{{*/
-	// Checks if it has a higher priority element (ahead)
-	auto curBak( currentPos );
-	for( ; currentPos < work_exp.end(); currentPos++ ){
-		if ( (*currentPos).m_priority > m_prior ){
-			currentPos = curBak;
-			return true;
+/*}}}*/
+
+/* Solving methods {{{*/
+int Exp::solve( void ){
+	/* Function implementation {{{*/
+	// to solve a postfix expression, we just need to find the first operator
+	// and get his position (ex: i), then we substitute i, i-1, i-2 positions
+	// with the result, then, do the process again until nothing lefts
+	std::stack<Token> numbers;
+	bool minus_f = false;
+	
+	for( auto &i : postfix_e ){
+		if( i.m_priority == 0 ){
+			numbers.push(i);
+		} else if( i.m_priority > 0 and i.m_priority < 4 ){
+			std::cout << "numbers size: " << numbers.size() << "\n";
+			if( numbers.size() >= 2 ){
+				Token num1 = numbers.top();
+				numbers.pop();
+				Token num2 = numbers.top();
+				numbers.pop();
+				Token result = resultOf( num2, num1, i );
+				numbers.push(result);
+			} else {
+				Token num1 = numbers.top();
+				numbers.pop();
+				Token op = numbers.top();
+				numbers.pop();
+				Token result = resultOf2( num1, op );
+				numbers.push(result);
+			}
 		}
 	}
-	currentPos = curBak;
-	return false;
+	Token final_result = numbers.top();
+	return std::stoi(final_result.m_value);
+	return 0;
+
 }
 /*}}}*/
 
-size_t Exp::peekNext( void ){
-	std::vector<Token>::iterator curBak = this->currentPos;		
-	return curBak++->m_priority;	
+Exp::Token Exp::resultOf( Token num1, Token num2, Token op ){
+/* Function implementation {{{*/
+	std::cout << "entrou no 1;";
+	int n1 = std::stoi(num1.m_value);
+	int n2 = std::stoi(num2.m_value);
+	Token res_t;
+	res_t.m_priority = 0;
+	if( op.m_value == "*" )
+		res_t.m_value = std::to_string(n1*n2);
+	else if( op.m_value == "/" )
+		res_t.m_value = std::to_string(n1/n2);
+	else if( op.m_value == "+" )
+		res_t.m_value = std::to_string(n1+n2);
+	else if( op.m_value == "-" )
+		res_t.m_value = std::to_string(n1-n2);
+	else if( op.m_value == "%" )
+		res_t.m_value = std::to_string(n1%n2);
+	else if( op.m_value == "^" )
+		res_t.m_value = std::to_string(pow(n1, n2));
+	else
+		std::cout << "Not predicted error on resultOf() function!\n";
+
+	return res_t;
 }
 /*}}}*/
 
+Exp::Token Exp::resultOf2( Token num1, Token op ){
+/* Function implementation {{{*/
+	std::cout << "entrou no 2;";
+	int n1 = std::stoi(num1.m_value);
+
+	Token res_t;
+	res_t.m_priority = 0;
+	if( op.m_value == "-" ){
+		n1 *= -1;
+	}
+	res_t.m_value = n1;
+	return res_t;
+}
+/*}}}*/
+
+void Exp::invert_it( Token &num ){
+/* Function implementation {{{*/
+	int n = std::stoi(num.m_value);
+	n *= -1;
+	num.m_value = std::to_string(n);
+}
+/*}}}*/
+
+/*}}}*/
 
 
