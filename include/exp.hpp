@@ -30,7 +30,7 @@ private:
 		std::string m_value;
 		int m_priority;
 
-		Token &operator=( Token &rhs );
+		Token &operator=( const Token &rhs );
 	};
 	/*}}}*/
 

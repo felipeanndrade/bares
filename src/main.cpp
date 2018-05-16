@@ -2,7 +2,9 @@
 #include "exp.hpp"
 #include "error.hpp"
 
+#ifndef debug
 #define debug true
+#endif
 
 int main( int argc, char **argv ){
 	std::string input;

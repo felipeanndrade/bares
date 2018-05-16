@@ -1,6 +1,8 @@
 #include "exp.hpp"
 
+#ifndef debug
 #define debug false
+#endif
 
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
@@ -33,7 +35,7 @@ char Exp::operator[]( size_t pos ){
 	return this->orig_exp[pos];
 }
 
-Exp::Token &Exp::Token::operator=( Exp::Token &rhs ){
+Exp::Token &Exp::Token::operator=( const Exp::Token &rhs ){
 	this->m_value = rhs.m_value;
 	this->m_priority = rhs.m_priority;
 	return *this;
