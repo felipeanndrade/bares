@@ -5,30 +5,23 @@
 #define debug true
 
 int main( int argc, char **argv ){
-	std::cout << "> Program started\n";
-
 	std::string input;
-
 	while( std::getline(std::cin, input) ){
-
 		Exp main_exp(input);	///> Generates the expression object
-		std::cout << "E: ";
 		main_exp.print();
 		std::cout << std::endl;
-		if( !main_exp.parse() ){
-			std::cout << "> Error exit" << std::endl;
+		if( main_exp.parse() ){
+			// If parser returns 1, then something went wrong
+			// std::cout << "> Error exit" << std::endl;
+			// Then, we got a error exit
 			return 1;
 		}
 
-		main_exp.tokenize();
-		main_exp.print_t();
-		main_exp.toPostfix();
+		main_exp.tokenize();	// Transforms the string exp to a token exp
+		main_exp.toPostfix();	// Transforms the token exp to a postfix exp
 
-		int res = main_exp.solve();
-		std::cout << "result: " << res << std::endl;
-
+		int res = main_exp.solve();		// Solves the postfix expression
+		std::cout << res << std::endl;
 	}
-
-	std::cout << "\n> Normal exit" << std::endl;
 	return EXIT_SUCCESS;
 }
