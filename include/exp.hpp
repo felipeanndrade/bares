@@ -38,6 +38,7 @@ private:
 	sc::Vector<Token> work_exp;
 	sc::Vector<Token> postfix_e;
 	sc::Vector<Token>::iterator currentPos = work_exp.begin();
+
 /*}}}*/
 
 public:
@@ -66,6 +67,7 @@ public:
 	bool isDigit( char );			// Checks if a number is a digit or not
 	bool isOperation( char );		// Checks if is a operation char
 	bool isDelimiter( char );		// Checks if is a delimeter char
+	bool isSpace( char );			// Checks if is a space char
 	int prior( char );				// Tells the priority of a given char
 
 	// Token related
@@ -83,6 +85,7 @@ public:
 
 /* Token methods {{{*/
 	void tokenize( void );			// Tokenize the expression
+	void evaluate_token( void );	// See if everything is correct
 	void toPostfix( void );			// Transforms the expression to postfix
 /*}}}*/
 

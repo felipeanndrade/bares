@@ -55,7 +55,7 @@ void Exp::print( void ){
 
 bool Exp::isDigit( char c_ ){
 /* Function implementation {{{*/
-	if( (c_ >= '0' and c_ <= '9') or ( c_ == '-' ) )
+	if( (c_ >= '0' and c_ <= '9')/*  or ( c_ == '-' )  */)
 		return true;
 	else
 		return false;
@@ -79,6 +79,16 @@ bool Exp::isDelimiter( char c_ ){
 		if( c_ == i ) return true;
 	}
 	return false;
+}
+/*}}}*/
+
+bool Exp::isSpace( char c_ ){
+/* Function implementation {{{*/
+	if( c_ == TS_WS or c_ == TS_TAB ){
+		return true;
+	} else {
+		return false;
+	}
 }
 /*}}}*/
 
@@ -149,7 +159,7 @@ int Exp::prior( char char_ ){
 
 bool Exp::hasBigger( Token top_t, Token act_t ){
 /* Function implementation {{{*/
-	if( act_t.m_priority > top_t.m_priority ){
+	if( act_t.m_priority >= top_t.m_priority ){
 		return false;
 	} else {
 		return true;
@@ -229,34 +239,16 @@ bool Exp::parse( void ){
 /*}}}*/
 
 int Exp::make_num( std::string::iterator &pos ){
-/* Function implementation {{{*/
+	/* Function implementation {{{*/
 	std::string num;
 
 	while( isDigit(*pos) ){
-		num.push_back(*pos++);	
+		num.push_back(*pos);	
+		pos++;
 	}
 
 	pos--;
-
-	// now, let's filter the TS_MINUS signs on the number
-	std::string filtered_num;
-	int minus_c = 0;
-	for( auto &c : num ){
-		if( c == TS_MINUS ){
-			minus_c++;				
-		} else {
-			filtered_num.push_back(c);
-		}
-	}
-
-	// then, update the number sign correcly
-	if( minus_c % 2 == 0 ){
-		return std::stoi( filtered_num );
-	} else {
-		int buf = std::stoi( filtered_num );
-		buf *= -1;
-		return buf;
-	}
+	return std::stoi(num);
 }
 /*}}}*/
 
@@ -276,7 +268,7 @@ void Exp::tokenize( void ){
 				buf.m_value = *c_;
 				buf.m_priority = 4;
 			}
-			if( isOperation( *c_ ) and *c_ != '-' ){
+			if( isOperation( *c_ ) ){
 				// its a operator
 				buf.m_value = *c_;
 				buf.m_priority = prior( *c_ );
@@ -292,6 +284,15 @@ void Exp::tokenize( void ){
 			work_exp.push_back(buf);
 		}
 	}
+}
+/*}}}*/
+
+void Exp::evaluate_token( void ){
+	/* Function implementation {{{*/
+	// For loop to check errors on the semanthics and correct some errors
+	for( auto token = work_exp.begin(); token < work_exp.end(); token++ ){
+		// detect errors here
+	}		
 }
 /*}}}*/
 
@@ -344,7 +345,7 @@ void Exp::toPostfix( void ){
 		r_stack.pop();
 	}
 
-	if( debug ){
+	if( 1 ){
 		std::cout << ">>> Postfix expression = ";
 		for( auto &c : postfix_e ){
 			std::cout << c.m_value << " ";
