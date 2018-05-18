@@ -79,7 +79,7 @@ public:
 
 /* Parse methods {{{*/
 	bool checkParent( void );					// Check the parentheses
-	int make_num( std::string::iterator &pos );	// Make the correct integer
+	long long int make_num( std::string::iterator &pos );	// Make the correct integer
 	bool parse( void );							// Checks if the exp is valid
 /*}}}*/
 

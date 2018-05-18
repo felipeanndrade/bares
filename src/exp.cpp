@@ -1,8 +1,6 @@
 #include "exp.hpp"
 
-#ifndef debug
-#define debug false
-#endif
+#define exp_debug true
 
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
@@ -238,7 +236,7 @@ bool Exp::parse( void ){
 }
 /*}}}*/
 
-int Exp::make_num( std::string::iterator &pos ){
+long long int Exp::make_num( std::string::iterator &pos ){
 	/* Function implementation {{{*/
 	std::string num;
 
@@ -248,7 +246,8 @@ int Exp::make_num( std::string::iterator &pos ){
 	}
 
 	pos--;
-	return std::stoi(num);
+
+	return std::stoll(num);
 }
 /*}}}*/
 
@@ -275,7 +274,7 @@ void Exp::tokenize( void ){
 			} 
 			if( isDigit( *c_ ) ){
 				// its a number
-				int number = make_num( c_ );
+				long long int number = make_num( c_ );
 				buf.m_value = std::to_string(number);
 				buf.m_priority = 0;
 			}
@@ -290,8 +289,19 @@ void Exp::tokenize( void ){
 void Exp::evaluate_token( void ){
 	/* Function implementation {{{*/
 	// For loop to check errors on the semanthics and correct some errors
-	for( auto token = work_exp.begin(); token < work_exp.end(); token++ ){
+	for( auto token = work_exp.begin(); token != work_exp.end(); token++ ){
+		std::cout << "Token: [" << (*token).m_value << ", ";
+		std::cout << (*token).m_priority << "]" << std::endl;
 		// detect errors here
+		std::cout << "foi ate aqui" << std::endl;
+
+		if( (*token).m_priority == 0 ){
+			long long int i_dec = std::stoll((*token).m_value);
+			if( i_dec < -32767 or i_dec > 32767){
+				std::cout << "entrou aqui" << std::endl;
+			}
+		}
+		std::cout << "saiu daqui" << std::endl;
 	}		
 }
 /*}}}*/
@@ -345,10 +355,14 @@ void Exp::toPostfix( void ){
 		r_stack.pop();
 	}
 
-	if( 1 ){
-		std::cout << ">>> Postfix expression = ";
+	if( exp_debug ){
+		std::cout << ">>> INFIX->POSTFIX: ";
+		std::cout << "\e[2m|\e[0m ";
 		for( auto &c : postfix_e ){
-			std::cout << c.m_value << " ";
+			if( c.m_priority > 0 ){
+				std::cout << "\e[1;33m";
+			}
+			std::cout << c.m_value << "\e[0m" << " \e[2m|\e[0m ";
 		}
 		std::cout << std::endl;
 	}
@@ -374,7 +388,13 @@ int Exp::solve( void ){
 				// Prevents from getting segfault
 				Token num1 = numbers.top(); numbers.pop();
 				Token num2 = numbers.top(); numbers.pop();
+
 				Token result = resultOf( num2, num1, i );
+				numbers.push(result);
+			} else if (numbers.size() == 1){
+				Token buf;
+				Token num1 = numbers.top(); numbers.pop();
+				Token result = resultOf( num1, i, buf );
 				numbers.push(result);
 			}
 		}
@@ -387,7 +407,20 @@ int Exp::solve( void ){
 Exp::Token Exp::resultOf( Token num1, Token num2, Token op ){
 /* Function implementation {{{*/
 	int n1 = std::stoi(num1.m_value);
-	int n2 = std::stoi(num2.m_value);
+	int n2;
+
+	if( num2.m_priority != 0 ){
+		// Little hack for when we got only one number and one operation
+		// ex: 3 -
+		op.m_value = "*";
+		if( num2.m_value == "-" ){
+			n2 = -1;
+		} else {
+			n2 = 1;
+		}
+	} else {
+		n2 = std::stoi(num2.m_value);
+	}
 
 	Token res_t;
 	res_t.m_priority = 0;

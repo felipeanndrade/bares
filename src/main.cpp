@@ -16,10 +16,11 @@ int main( int argc, char **argv ){
 			// If parser returns 1, then something went wrong
 			// std::cout << "> Error exit" << std::endl;
 			// Then, we got a error exit
-			return 1;
+			return EXIT_SUCCESS;
 		}
 
 		main_exp.tokenize();	// Transforms the string exp to a token exp
+		main_exp.evaluate_token();
 		main_exp.toPostfix();	// Transforms the token exp to a postfix exp
 
 		int res = main_exp.solve();		// Solves the postfix expression
