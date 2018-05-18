@@ -1,4 +1,5 @@
 #include "exp.hpp"
+#include "error.hpp"
 
 #define exp_debug true
 
@@ -290,18 +291,40 @@ void Exp::evaluate_token( void ){
 	/* Function implementation {{{*/
 	// For loop to check errors on the semanthics and correct some errors
 	for( auto token = work_exp.begin(); token != work_exp.end(); token++ ){
-		std::cout << "Token: [" << (*token).m_value << ", ";
-		std::cout << (*token).m_priority << "]" << std::endl;
 		// detect errors here
-		std::cout << "foi ate aqui" << std::endl;
-
+		
 		if( (*token).m_priority == 0 ){
-			long long int i_dec = std::stoll((*token).m_value);
-			if( i_dec < -32767 or i_dec > 32767){
-				std::cout << "entrou aqui" << std::endl;
+			int i_dec = std::stol((*token).m_value);
+			if(i_dec > 32767){
+				std::cout << "Integer constant out of range beginning at column ("<<token - work_exp.begin() +1 <<")!\n";
+			break;
 			}
 		}
-		std::cout << "saiu daqui" << std::endl;
+
+//		if((*token).m_priority+1 )
+//		{
+//			
+//		}
+
+		if((*token).m_priority == 0 and (*token+1).m_value == "\n")
+		{
+			std::cout << "Missing operator at column ("<< token - work_exp.begin() + 1 <<")!\n";	
+			 break;
+		}
+ 
+		if((*token).m_priority >= 1 and (*token).m_priority <= 3 and (*token+1).m_value  == "\n")
+		{
+			std::cout << "Missing operand at column ("<< token - work_exp.begin() + 1 << ")!\n";
+			break;
+		}
+		
+		if((res_t < -32767 or res_t > 32767)
+		{
+			std::cout << "Numeric overflow error!\n";
+			break;
+		}
+
+				
 	}		
 }
 /*}}}*/
