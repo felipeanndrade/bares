@@ -1,6 +1,5 @@
 #include <iostream>
 #include "exp.hpp"
-#include "error.hpp"
 
 #ifndef debug
 #define debug true
@@ -10,11 +9,8 @@ int main( int argc, char **argv ){
 	std::string input;
 	while( std::getline(std::cin, input) ){
 		Exp main_exp(input);	///> Generates the expression object
-		// main_exp.print();
-		// std::cout << std::endl;
 		if( main_exp.parse() ){
 			// If parser returns 1, then something went wrong
-			// std::cout << "> Error exit" << std::endl;
 			// Then, we got a error exit
 			return 1;
 		}

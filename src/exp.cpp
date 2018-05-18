@@ -1,7 +1,8 @@
 #include "exp.hpp"
 
 #define exp_debug false
-#define postfix true
+#define postfix false
+#define debug_token false
 
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
@@ -18,12 +19,15 @@ Exp::~Exp( void ){ /* default */ }
 std::string::iterator Exp::begin( void ){
 	return this->orig_exp.begin();
 }
+
 std::string::const_iterator Exp::cbegin( void ) const{
 	return this->orig_exp.cbegin();
 }
+
 std::string::iterator Exp::end( void ){
 	return this->orig_exp.end();
 }
+
 std::string::const_iterator Exp::cend( void ) const{
 	return this->orig_exp.cend();
 }
@@ -211,7 +215,7 @@ bool Exp::parse( void ){
 /* Function implementation {{{*/
 	// If the user enter a null expression
 	if( !orig_exp.length() ){
-		ERR_MSG( "You entered a null expression, try again." );
+		std::cout << "You entered a null expression, try again." << std::endl;
 		return 1;
 	}
 
@@ -257,6 +261,7 @@ long long int Exp::make_num( std::string::iterator &pos ){
 /* Token methods {{{*/
 void Exp::tokenize( void ){
 /* Function implementation {{{*/
+	bool minus_f = false;
 	for( auto c_ = orig_exp.begin(); c_ < orig_exp.end(); c_++ ){
 		// for loop to get all the chars on the original expression
 		if( *c_ != TS_WS and *c_ != TS_TAB ){
@@ -267,13 +272,20 @@ void Exp::tokenize( void ){
 				// is a delimiter
 				buf.m_value = *c_;
 				buf.m_priority = 4;
-			}
-			if( isOperation( *c_ ) ){
+			} else if( isOperation( *c_ ) ){
 				// its a operator
-				buf.m_value = *c_;
-				buf.m_priority = prior( *c_ );
-			} 
-			if( isDigit( *c_ ) ){
+				if( !isDigit( *(c_-1)) and *c_ == TS_MINUS and isDigit(*(c_+1)) ){
+					minus_f = true;
+					c_++;
+					buf.m_priority = prior( *c_ );
+					long long int number = make_num( c_ );
+					buf.m_value += std::to_string( number*-1 );
+					// std::cout << buf.m_value << std::endl;
+				} else {
+					buf.m_value = *c_;
+					buf.m_priority = prior( *c_ );
+				}
+			} else if( isDigit( *c_ ) ){
 				// its a number
 				long long int number = make_num( c_ );
 				buf.m_value = std::to_string(number);
@@ -284,6 +296,7 @@ void Exp::tokenize( void ){
 			work_exp.push_back(buf);
 		}
 	}
+	if( debug_token ) print_t();
 }
 /*}}}*/
 
@@ -295,6 +308,8 @@ void Exp::evaluate_token( void ){
 			std::cout << "Token: [" << (*token).m_value << ", ";
 			std::cout << (*token).m_priority << "]" << std::endl;
 		}
+
+
 	}		
 }
 /*}}}*/
