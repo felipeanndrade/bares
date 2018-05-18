@@ -1,6 +1,7 @@
 #include "exp.hpp"
 
-#define exp_debug true
+#define exp_debug false
+#define postfix true
 
 /* Special functions {{{*/
 Exp::Exp( std::string expression ){
@@ -290,18 +291,10 @@ void Exp::evaluate_token( void ){
 	/* Function implementation {{{*/
 	// For loop to check errors on the semanthics and correct some errors
 	for( auto token = work_exp.begin(); token != work_exp.end(); token++ ){
-		std::cout << "Token: [" << (*token).m_value << ", ";
-		std::cout << (*token).m_priority << "]" << std::endl;
-		// detect errors here
-		std::cout << "foi ate aqui" << std::endl;
-
-		if( (*token).m_priority == 0 ){
-			long long int i_dec = std::stoll((*token).m_value);
-			if( i_dec < -32767 or i_dec > 32767){
-				std::cout << "entrou aqui" << std::endl;
-			}
+		if( exp_debug ){
+			std::cout << "Token: [" << (*token).m_value << ", ";
+			std::cout << (*token).m_priority << "]" << std::endl;
 		}
-		std::cout << "saiu daqui" << std::endl;
 	}		
 }
 /*}}}*/
@@ -355,7 +348,7 @@ void Exp::toPostfix( void ){
 		r_stack.pop();
 	}
 
-	if( exp_debug ){
+	if( postfix ){
 		std::cout << ">>> INFIX->POSTFIX: ";
 		std::cout << "\e[2m|\e[0m ";
 		for( auto &c : postfix_e ){
@@ -372,13 +365,14 @@ void Exp::toPostfix( void ){
 /*}}}*/
 
 /* Solving methods {{{*/
-int Exp::solve( void ){
+std::pair<long int, bool> Exp::solve( void ){
 	/* Function implementation {{{*/
 	// to solve a postfix expression, we just need to find the first operator
 	// and get his position (ex: i), then we substitute i, i-1, i-2 positions
 	// with the result, then, do the process again until nothing lefts
 
 	sc::stack<Token> numbers;
+	bool error_flag = false;		// Error flag
 	
 	for( auto &i : postfix_e ){
 		if( i.m_priority == 0 ){
@@ -388,26 +382,50 @@ int Exp::solve( void ){
 				// Prevents from getting segfault
 				Token num1 = numbers.top(); numbers.pop();
 				Token num2 = numbers.top(); numbers.pop();
+				
+				std::pair<Token, bool> buf( resultOf(num2, num1, i) );
 
-				Token result = resultOf( num2, num1, i );
-				numbers.push(result);
+				if( buf.second ){
+					error_flag = true;
+					break;
+				} else {
+					Token result = buf.first;
+					numbers.push(result);
+				}
+
 			} else if (numbers.size() == 1){
 				Token buf;
 				Token num1 = numbers.top(); numbers.pop();
-				Token result = resultOf( num1, i, buf );
-				numbers.push(result);
+
+				std::pair<Token, bool> buf2( resultOf(num1, i, buf) );
+				
+				if( buf2.second ){
+					error_flag = true;
+					break;
+				} else {
+					Token result = buf2.first;
+					numbers.push(result);
+				}
 			}
 		}
 	}
-	Token f_res = numbers.top();
-	return std::stoi(f_res.m_value);
+
+	Token f_res;
+	if( error_flag ){
+		return std::pair<int,bool>(0, error_flag);
+	}
+	else{
+		f_res = numbers.top();
+		long int buf_s = std::stol(f_res.m_value);
+		return std::pair<int,bool>(buf_s, error_flag );
+	}
 }
 /*}}}*/
 
-Exp::Token Exp::resultOf( Token num1, Token num2, Token op ){
+std::pair<Exp::Token, bool> Exp::resultOf( Token num1, Token num2, Token op ){
 /* Function implementation {{{*/
-	int n1 = std::stoi(num1.m_value);
-	int n2;
+	long int n1 = std::stol(num1.m_value);
+	long int n2;
 
 	if( num2.m_priority != 0 ){
 		// Little hack for when we got only one number and one operation
@@ -419,36 +437,81 @@ Exp::Token Exp::resultOf( Token num1, Token num2, Token op ){
 			n2 = 1;
 		}
 	} else {
-		n2 = std::stoi(num2.m_value);
+		n2 = std::stol(num2.m_value);
 	}
 
-	Token res_t;
-	res_t.m_priority = 0;
+	Token res_t;					// Temp token, when we have < 2 numbers
+	bool error_flag = false;		// Error flag
+	res_t.m_priority = 0;			// pseudo priority
 
-	if( op.m_value == "*" )
-		res_t.m_value = std::to_string(n1*n2);
-	else if( op.m_value == "/" ){
-		if( n2 != 0 )
-			res_t.m_value = std::to_string(n1/n2);
-		else {
-			std::cout << "Division by zero!\n";
-			res_t.m_value = "0";
-		}
-	}
-	else if( op.m_value == "+" )
-		res_t.m_value = std::to_string(n1+n2);
-	else if( op.m_value == "-" )
-		res_t.m_value = std::to_string(n1-n2);
-	else if( op.m_value == "%" )
-		res_t.m_value = std::to_string(n1%n2);
-	else if( op.m_value == "^" )
-		res_t.m_value = std::to_string(pow(n1, n2));
-	else
-		std::cout << "Extraneous symbol after valid expression found!\n";
-	return res_t;
+	switch( op.m_value[0] ){
+		case '+':
+			if( n1 + n2 > 32767 or n1 + n2 < -32768 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(n1+n2);	// if everything is OK
+			}
+			break;
+
+		case '-':
+			if( n1 - n2 > 32767 or n1 - n2 < -32768 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(n1-n2);	// if everything is OK
+			}
+			break;
+
+		case '*':
+			if( n1 * n2 > 32767 or n1 * n2 < -32768 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(n1*n2);	// if everything is OK
+			}
+			break;
+
+		case '/':
+			if( n2 == 0 or n1 == 0 ){
+				std::cout << "Division by zero!" << std::endl;
+				error_flag = true;
+			} else if( n1 / n2 > 32767 or n1 / n2 < -32768 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(n1/n2);	// if everything is OK
+			}
+			break;
+
+		case '%':
+			if( n2 == 0 or n1 == 0 ){
+				std::cout << "Division by zero!" << std::endl;
+				error_flag = true;
+				break;
+			} else if( n1 % n2 > 32767 or n1 % n2 < -32767 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(n1 % n2); // if everything is OK
+			}
+			break;
+
+		case '^':
+			if( pow(n1, n2) > 32767 or pow(n1, n2) < -32768 ){
+				std::cout << "Numeric overflow error!" << std::endl;
+				error_flag = true;
+			} else {
+				res_t.m_value = std::to_string(pow(n1, n2)); // if everything OK
+			}
+			break;
+		default:
+			std::cout << "Extraneous symbol after valid expression found!\n";
+	}	
+
+	return std::pair<Token, bool> (res_t, error_flag);
 }
-/*}}}*/
 
 /*}}}*/
 
-
+/*}}}*/

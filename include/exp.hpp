@@ -90,8 +90,8 @@ public:
 /*}}}*/
 
 	/* Solving methods {{{*/
-	int solve( void );	
-	Token resultOf( Token, Token, Token );
+	std::pair<long int, bool> solve( void );	
+	std::pair<Token, bool> resultOf( Token, Token, Token );
 	/*}}}*/
 };
 /*}}}*/
